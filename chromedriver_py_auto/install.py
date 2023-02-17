@@ -1,13 +1,14 @@
 import json
 import logging
+import os
+import shutil
+import subprocess
+import sys
 import urllib.request
+from pathlib import Path
 from typing import Iterable, List, Optional
 
-try:
-    from pip import main as pip_main
-except ImportError:
-    from pip._internal import main as pip_main
-
+from chromedriver_py_auto.binary_path import binary_path
 from chromedriver_py_auto.chrome import extract_chrome_version
 from chromedriver_py_auto.version import Version
 
@@ -32,12 +33,25 @@ def install() -> None:
         )
     )
 
-    pip_main(
+    python_path = Path(sys.prefix) / "bin" / "python3"
+    subprocess.check_call(
         [
+            str(python_path),
+            "-m",
+            "pip",
             "install",
             "chromedriver-py=={}".format(most_suitable_chromedriver_py_version),
         ]
     )
+
+    import chromedriver_py
+
+    logging.error(
+        'Copying "{}" to "{}".'.format(chromedriver_py.binary_path, binary_path)
+    )
+    shutil.copy2(chromedriver_py.binary_path, binary_path)
+    stat = os.stat(chromedriver_py.binary_path)
+    os.chown(binary_path, stat.st_uid, stat.st_gid)
 
 
 def _get_package_versions(package_name: str) -> List[Version]:
