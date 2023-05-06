@@ -2,10 +2,7 @@ import json
 import logging
 import os
 import shutil
-import subprocess
-import sys
 import urllib.request
-from pathlib import Path
 from typing import Iterable, List, Optional
 
 from chromedriver_py_auto.binary_path import binary_path
@@ -13,7 +10,18 @@ from chromedriver_py_auto.chrome import extract_chrome_version
 from chromedriver_py_auto.version import Version
 
 
-def install() -> None:
+def copy_binary() -> None:
+    import chromedriver_py
+
+    logging.error(
+        'Copying "{}" to "{}".'.format(chromedriver_py.binary_path, binary_path)
+    )
+    shutil.copy2(chromedriver_py.binary_path, binary_path)
+    stat = os.stat(chromedriver_py.binary_path)
+    os.chown(binary_path, stat.st_uid, stat.st_gid)
+
+
+def extract_suitable_version() -> Version:
     chrome_version = Version.from_string(extract_chrome_version())
     logging.info('Chrome version "{}" is detected.'.format(str(chrome_version)))
 
@@ -28,30 +36,12 @@ def install() -> None:
         chrome_version, chromedriver_py_versions
     )
     logging.info(
-        'Chromedriver version "{}" is selected for installation.'.format(
+        'Chromedriver version "{}" is the most suitable for installation.'.format(
             str(most_suitable_chromedriver_py_version)
         )
     )
 
-    python_path = Path(sys.prefix) / "bin" / "python3"
-    subprocess.check_call(
-        [
-            str(python_path),
-            "-m",
-            "pip",
-            "install",
-            "chromedriver-py=={}".format(most_suitable_chromedriver_py_version),
-        ]
-    )
-
-    import chromedriver_py
-
-    logging.error(
-        'Copying "{}" to "{}".'.format(chromedriver_py.binary_path, binary_path)
-    )
-    shutil.copy2(chromedriver_py.binary_path, binary_path)
-    stat = os.stat(chromedriver_py.binary_path)
-    os.chown(binary_path, stat.st_uid, stat.st_gid)
+    return most_suitable_chromedriver_py_version
 
 
 def _get_package_versions(package_name: str) -> List[Version]:
