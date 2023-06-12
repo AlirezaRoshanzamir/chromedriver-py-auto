@@ -69,6 +69,9 @@ def _find_most_suitable_driver_version(
             break
         pre_driver_version = driver_version
 
+    if software_version.major == driver_version.major:
+        return driver_version
+
     raise ValueError(
         'For "{}" software version, there is no suitable driver '
         'version in "{}" list.'.format(

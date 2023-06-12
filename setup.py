@@ -18,7 +18,7 @@ class CopyChromedriverPyBinary(setuptools.command.build_py.build_py):
 
 setuptools.setup(
     name="chromedriver-py-auto",
-    version="0.2.2",
+    version="0.2.3",
     description="A wrapper around chromedriver-py library. Detects the Chrome version "
     "and installs the most suitable chromedriver-py version.",
     long_description=Path("README.md").read_text(),
